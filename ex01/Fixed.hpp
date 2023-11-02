@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 15:19:18 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/10/31 15:46:36 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/11/02 11:45:48 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ public:
 	float	toFloat(void) const;
 	int		toInt(void) const;
 	Fixed&	operator=(const Fixed& other);
-//	std::ostream&	operator<<(std::ostream& os, const Fixed& fixed) const;
 	~Fixed();
 };
 

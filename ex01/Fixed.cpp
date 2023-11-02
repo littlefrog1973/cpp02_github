@@ -6,12 +6,11 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 15:30:24 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/11/01 12:52:08 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/11/02 12:21:55 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Fixed.hpp"
-#include <limits>
 #include <cmath>
 
 //constructor
@@ -25,7 +24,10 @@ Fixed::Fixed()
 Fixed::Fixed(const Fixed& other)
 {
 	cout << "Copy constructor called" << endl;
-	this->value = other.getRawBits();
+// this->value = other.getRawBits();
+// commented above line does not use an overloaded assignment operator
+// below line is using an overloaded assignment operator
+	*this = other;
 }
 
 //int constructor
@@ -33,44 +35,35 @@ Fixed::Fixed(const int intVal)
 {
 	cout << "Int constructor called" << endl;
 	value = intVal << numBits;
-	if (intVal < 0)
-		value = -value;
 }
 
 //float constructor
 Fixed::Fixed(const float floatVal)
 {
-	float	rounded;
-	int		rounded_int;
+	float			rounded;
+	float			remaining;
+	int				rounded_int;
 
+	value = 0;
 	cout << "Float constructor called" << endl;
 	rounded = roundf(floatVal);
-	if ((rounded <= floatVal) && (floatVal >= 0.0))
+
+	if (floatVal >= 0.0)
 	{
-		value = (int) rounded << numBits;
-		rounded = floatVal - rounded;
+		if(rounded > floatVal)
+			rounded -= 1.0;
+		remaining = floatVal - rounded;
 	}
-	else if ((rounded > floatVal && (floatVal >= 0.0)))
+	else
 	{
-		rounded -= 1.0;
-		value = (int) rounded << numBits;
-		rounded = floatVal - rounded;
+		if (rounded < floatVal)
+			rounded += 1.0;
+		remaining = rounded - floatVal;
 	}
-	else if ((rounded >= floatVal) && (floatVal < 0.0))
-	{
-		value = (int) rounded << numBits;
-		value |= 0x80000000;
-		rounded = rounded - floatVal;
-	}
-	else if ((rounded < floatVal) && (floatVal < 0.0))
-	{
-		rounded += 1.0;
-		value = (int) rounded << numBits;
-		value |= 0x80000000;
-		rounded = rounded - floatVal;
-	}
-	rounded /= (1.0 / (1 << numBits));
-	rounded_int = (int) rounded * 1;
+	rounded_int = static_cast<int> (rounded);
+	value = rounded_int << numBits;
+	remaining /= (1.0 / (1 << numBits));
+	rounded_int = static_cast<int> (roundf(remaining));
 	value |= rounded_int;
 }
 
@@ -97,14 +90,28 @@ int		Fixed::toInt(void) const
 
 	left = value >> numBits;
 	if (value >= 0)
-		return (left);
+		return (left + !(!(value & (1 << (numBits - 1)))));
 	else
-		return (left | 0x80000000);
+		return (left - !(!(value & (1 << (numBits - 1)))));
 }
 
 float	Fixed::toFloat(void) const
 {
-	return (static_cast<float>(value) / (1 << numBits));
+	float	toStream;
+	int		temp;
+
+	if (value >= 0)
+	{
+		toStream = static_cast<float> (value >> numBits);
+		toStream += (value & ((1 << numBits) - 1)) * (1.0) / (1 << numBits);
+	}
+	else
+	{
+		temp = value >> numBits;
+		toStream = static_cast<float> (temp);
+		toStream -= (value & ((1 << numBits) - 1)) * (1.0) / (1 << numBits);
+	}
+	return (toStream);
 }
 
 Fixed&	Fixed::operator=(const Fixed& other)
@@ -119,7 +126,11 @@ Fixed&	Fixed::operator=(const Fixed& other)
 
 std::ostream&	operator<<(std::ostream& os, const Fixed& fixed)
 {
-	if (fixed.getRawBits() & ((1 << 8) - 1))
+	float	remainder;
+
+// check that is there any value on the right of fixed point?
+	remainder = fixed.toFloat() / roundf(fixed.toFloat());
+	if (remainder != 1.0)
 		os << fixed.toFloat();
 	else
 		os << fixed.toInt();

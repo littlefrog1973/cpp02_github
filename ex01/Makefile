@@ -6,7 +6,7 @@
 #    By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/17 13:45:55 by sdeeyien          #+#    #+#              #
-#    Updated: 2023/10/19 16:10:49 by sdeeyien         ###   ########.fr        #
+#    Updated: 2023/11/02 12:16:30 by sdeeyien         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,7 @@ BONUS_NAME =
 all : $(NAME) $(BONUS_NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -lm -o $@
 
 bonus : $(BONUS_NAME)
 
